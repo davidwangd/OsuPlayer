@@ -1,3 +1,5 @@
+# coding : utf-8
+
 import time
 import win32gui
 import win32con
@@ -41,4 +43,3 @@ class ClickPlayerThread(Thread):
 	def run(self):
 		self.player.restart()
 
-	

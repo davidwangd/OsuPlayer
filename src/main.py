@@ -7,12 +7,14 @@ if __name__ == "__main__":
 	print("Please Input the Osu! file!")
 	parser.parse_file(input())
 
-	position_thread = PositionPlayerThread(PositionPlayer(parser.get_list()))
-	click_thread = ClickPlayerThread(ClickPlayer(parser.get_list()))
+	pp = PositionPlayer(parser.get_list())
+	cp = ClickPlayer(parser.get_list())
 
-	print("The Parser is finished!, Press Enter to start the game")
+	position_thread = PositionPlayerThread(pp)
+	click_thread = ClickPlayerThread(cp)
 
+	print("The Parser is finished!, Make the Game paused! and Press Enter to start the game")
+
+	pp.begin()
 	position_thread.start()
 	click_thread.start()
-
-	
