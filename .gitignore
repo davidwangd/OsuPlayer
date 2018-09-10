@@ -1,1 +1,7 @@
 .idea/*
+
+src/__pycache__/*
+test/*
+
+__init__.py
+*.osu
