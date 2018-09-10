@@ -30,7 +30,7 @@ class PositionPlayer:
 
 		self.catch_ui()
 
-		self.maxtime = 10
+		self.maxtime = 30
 
 	def begin(self):
 		self.move_to(1.2 * self.maxx,self.maxy)
