@@ -75,7 +75,7 @@ class OsuFileParser:
 			another_end = controls[0].split(':')
 			ends = [(int(another_end[0]), int(another_end[1])), (x, y)]
 			for i in range(repeats):
-				reach_time = int(round(time + duration * i))
+				reach_time = int(round(time + duration * (i + 1)))
 				reach_end = ends[i % 2]
 				mouse_action = TimePoint.MOUSE_NO_ACTION if i < repeats - 1 else TimePoint.MOUSE_UP
 				slider_res.append(TimePoint(reach_time, reach_end[0], reach_end[1], mouse_action))
