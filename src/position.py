@@ -21,7 +21,7 @@ class PositionPlayer:
 		self.maxx = 512
 		self.maxy = 384
 		self._PRE_LEFT_MILLSEC = 1
-		self._BEFORE_RESTART = 1.9
+		self._BEFORE_RESTART = 1.95
 
 		self._XK = 0.6
 		self._XB = 0.25
