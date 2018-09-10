@@ -31,11 +31,12 @@ class ClickPlayer:
 				break
 			if (self.actionList[i].typ == 0):
 				i += 1
-			elif (now < self.actionList[i].time - self._CLICK_TIME and (self.actionList[i].time & 1) != 0):
+			elif (now < self.actionList[i].time - self._CLICK_TIME and (self.actionList[i].typ & 1) != 0):
 				win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
 				print("Down")
-				i += 1
-			elif (now > self.actionList[i].time + self._CLICK_TIME and (self.actionList[i].time & 2) != 0):
+				if (self.actionList[i].typ == 1):
+					i += 1
+			elif (now > self.actionList[i].time + self._CLICK_TIME and (self.actionList[i].typ & 2) != 0):
 				win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 				print("Up")
 				i += 1
