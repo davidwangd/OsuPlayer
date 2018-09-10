@@ -96,18 +96,18 @@ class OsuFileParser:
 			for i in range(1, points + 1):
 				angle = direction * (center_angle * i / points)
 				interpolation.append(radius * (np.cos(angle) + np.sin(angle) * 1j) + center);
-			base_duration = time / points
+			base_duration = duration / points
 			for i in range(repeats):
 				if i % 2 == 0:
 					for j in range(1, points + 1):
 						time += base_duration
 						p = interpolation[j]
-						slider_res.append(TimePoint(time, p.real, p.imag, TimePoint.MOUSE_NO_ACTION))
+						slider_res.append(TimePoint(int(round(time)), p.real, p.imag, TimePoint.MOUSE_NO_ACTION))
 				else:
 					for j in range(points - 1, -1, -1):
 						time += base_duration
 						p = interpolation[j]
-						slider_res.append(TimePoint(time, p.real, p.imag, TimePoint.MOUSE_NO_ACTION))
+						slider_res.append(TimePoint(int(round(time)), p.real, p.imag, TimePoint.MOUSE_NO_ACTION))
 			end_point = slider_res[-1]
 			end_point.typ = TimePoint.MOUSE_UP
 			slider_res[-1] = end_point
