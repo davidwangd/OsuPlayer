@@ -27,6 +27,7 @@ class TimePoint:
 class OsuFileParser:
 	INTERPOLATION_INTERVAL = 50
 	BEZIER_STEPS = 10
+	EPSILON = 1e-4
 
 	TYPE_CIRCLE = 1
 	TYPE_SLIDER = 2
@@ -112,7 +113,7 @@ class OsuFileParser:
 						for v in range(OsuFileParser.BEZIER_STEPS):
 							intpl = bezier.copy()
 							next_interpolation = []
-							t = v / OsuFileParser.BEZIER_STEPS
+							t = (v + 1) / OsuFileParser.BEZIER_STEPS
 							for j in range(n - 1):
 								for k in range(n - 1 - j):
 									next_interpolation.append(intpl[k] * (1 - t) + intpl[k + 1] * t)
@@ -132,7 +133,7 @@ class OsuFileParser:
 				curve_tot_len = sum(curve_lens)
 				interpolation = [x + y * 1j]
 				for i in range(1, points + 1):
-					expect_len = curve_tot_len * i / points
+					expect_len = curve_tot_len * i / points - OsuFileParser.EPSILON
 					current_len = 0
 					p = -1
 					for j in range(n):
