@@ -26,6 +26,7 @@ class TimePoint:
 
 class OsuFileParser:
 	INTERPOLATION_INTERVAL = 50
+	BEZIER_STEPS = 10
 
 	TYPE_CIRCLE = 1
 	TYPE_SLIDER = 2
@@ -79,23 +80,79 @@ class OsuFileParser:
 				reach_end = ends[i % 2]
 				mouse_action = TimePoint.MOUSE_NO_ACTION if i < repeats - 1 else TimePoint.MOUSE_UP
 				slider_res.append(TimePoint(reach_time, reach_end[0], reach_end[1], mouse_action))
-		elif curve_type == 'P':
-			# Calculate center, radius & center angle
-			c0, c1 = controls[0].split(':'), controls[1].split(':')
-			p0 = x + y * 1j
-			p1 = float(c0[0]) + float(c0[1]) * 1j
-			p2 = float(c1[0]) + float(c1[1]) * 1j
-			w = (p2 - p0) / (p1 - p0)
-			center = (p1 - p0) * (w - abs(w)**2) / (2j * w.imag) + p0;
-			radius = p0 - center
-			center_angle = 2 * np.arcsin(abs(p2 - p0) / (2 * abs(radius)))
-			direction = np.sign(radius.real * (p2 - p0).imag - radius.imag * (p2 - p0).real)
-			# Do interpolation
-			interpolation = [p0]
+		elif curve_type == 'P' or curve_type == 'B':
 			points = int(np.ceil(duration / OsuFileParser.INTERPOLATION_INTERVAL))
-			for i in range(1, points + 1):
-				angle = direction * (center_angle * i / points)
-				interpolation.append(radius * (np.cos(angle) + np.sin(angle) * 1j) + center);
+			if curve_type == 'P':
+				# Calculate center, radius & center angle
+				c0, c1 = controls[0].split(':'), controls[1].split(':')
+				p0 = x + y * 1j
+				p1 = float(c0[0]) + float(c0[1]) * 1j
+				p2 = float(c1[0]) + float(c1[1]) * 1j
+				w = (p2 - p0) / (p1 - p0)
+				center = (p1 - p0) * (w - abs(w)**2) / (2j * w.imag) + p0;
+				radius = p0 - center
+				center_angle = 2 * np.arcsin(abs(p2 - p0) / (2 * abs(radius)))
+				direction = np.sign((p1 - p0).real * (p2 - p1).imag - (p1 - p0).imag * (p2 - p0).real)
+				# Do interpolation
+				interpolation = [p0]
+				for i in range(1, points + 1):
+					angle = direction * (center_angle * i / points)
+					interpolation.append(radius * (np.cos(angle) + np.sin(angle) * 1j) + center);
+			else:
+				controls_len = len(controls)
+				bezier = [x + y * 1j]
+				curve_lens = []
+				curve_points = []
+				for i in range(controls_len):
+					c = controls[i].split(':')
+					bezier.append(float(c[0]) + float(c[1]) * 1j)
+					if i == controls_len - 1 or controls[i] == controls[i + 1]:
+						n = len(bezier)
+						seg = [bezier[0]]
+						for v in range(OsuFileParser.BEZIER_STEPS):
+							intpl = bezier.copy()
+							next_interpolation = []
+							t = v / OsuFileParser.BEZIER_STEPS
+							for j in range(n - 1):
+								for k in range(n - 1 - j):
+									next_interpolation.append(intpl[k] * (1 - t) + intpl[k + 1] * t)
+								intpl = next_interpolation
+								next_interpolation = []
+							seg.append(intpl[0])
+						# END for
+						curve_points.append(seg)
+						curve_len = 0
+						for i in range(OsuFileParser.BEZIER_STEPS):
+							curve_len += abs(seg[i + 1] - seg[i])
+						curve_lens.append(curve_len)
+						bezier.clear()
+					# END if
+				# END for
+				n = len(curve_lens)
+				curve_tot_len = sum(curve_lens)
+				interpolation = [x + y * 1j]
+				for i in range(1, points + 1):
+					expect_len = curve_tot_len * i / points
+					current_len = 0
+					p = -1
+					for j in range(n):
+						if (current_len + curve_lens[j] >= expect_len):
+							for k in range(OsuFileParser.BEZIER_STEPS):
+								small_seg = abs(curve_points[j][k + 1] - curve_points[j][k])
+								if (current_len + small_seg >= expect_len):
+									t = (expect_len - current_len) / small_seg
+									p = curve_points[j][k] * (1 - t) + curve_points[j][k + 1] * t;
+									break
+								else:
+									current_len += small_seg
+							if p != -1:
+								break
+						else:
+							current_len += curve_lens[j]
+					# END for
+					interpolation.append(p)
+				# END for
+			# END if
 			base_duration = duration / points
 			for i in range(repeats):
 				if i % 2 == 0:
@@ -111,8 +168,6 @@ class OsuFileParser:
 			end_point = slider_res[-1]
 			end_point.typ = TimePoint.MOUSE_UP
 			slider_res[-1] = end_point
-		elif curve_type == 'B':
-			pass
 		elif curve_type == 'C':
 			print('C-type is deprecated')
 		else:
