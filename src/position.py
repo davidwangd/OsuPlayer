@@ -5,38 +5,61 @@ import win32api
 import math
 from threading import Thread
 
-class_name = "WindowsForms10.Window.2b.app.0.2f3e4cc_r9_ad1"
-
 
 # right => x
 # down  => y
 
 class PositionPlayer:
-	def __init__(self, actionList):
+	def __init__(self, actionList, class_name):
 		self.actionList = actionList
 		self.x = [0,1]
 		self.y = [0,1]
 		self.index = 0
 		self.start_time = 0
-		self.handle = win32gui.FindWindow(class_name, None)
+		self.class_name = class_name
+		self.handle = win32gui.FindWindow(self.class_name, None)
 		self.maxx = 512
 		self.maxy = 384
 		self._PRE_LEFT_MILLSEC = 1
-		self._BEFORE_RESTART = 0.12
+		self._BEFORE_RESTART = 1.9
+
+		self._XK = 0.6
+		self._XB = 0.25
+		self._YK = 0.8
+		self._YB = 0.13
+
 		self.catch_ui()
 
-	def begin(self):
-		self.move_to(self.maxx / 2, self.maxy / 2)
-		# thank to the strange behaviou of osu! we have to make it like this
-		win32api.mouse_event(win32con.MOUSEEVENT_LEFTDOWN, 0, 0, 0, 0)
-		time.sleep(0.3)
-		win32api.mouse_event(win32con.MOUSEEVENT_LEFTUP, 0, 0, 0, 0)
+		self.maxtime = 10
 
-		time.sleep(1)
-		
-		win32api.mouse_event(win32con.MOUSEEVENT_LEFTDOWN, 0, 0, 0, 0)
+	def begin(self):
+		self.move_to(1.2 * self.maxx,self.maxy)
+		# thank to the strange behaviou of osu! we have to make it like this
+		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
 		time.sleep(0.3)
-		win32api.mouse_event(win32con.MOUSEEVENT_LEFTUP, 0, 0, 0, 0)
+		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+
+		time.sleep(3)
+
+		win32api.keybd_event(27,0,0,0)
+		time.sleep(0.1)
+		win32api.keybd_event(27,0, win32con.KEYEVENTF_KEYUP, 0)
+		time.sleep(1)
+
+		self.move_to(self.maxx/2, self.maxy/2)
+		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+		time.sleep(0.3)
+		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+
+
+#		time.sleep(1)
+#		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+#		time.sleep(0.3)
+#		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+		
+#		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+#		time.sleep(0.3)
+#		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 
 		time.sleep(self._BEFORE_RESTART)
 
@@ -59,14 +82,25 @@ class PositionPlayer:
 		self.y = [top, bottom]
 
 	def move_to(self, x, y):
-		x = int(x / self.maxx * (self.x[1] - self.x[0])) + self.x[0]
-		y = int(y / self.maxy * (self.y[1] - self.y[0])) + self.y[0]
+	#	print((x,y))
+		x = (x / self.maxx * (self.x[1] - self.x[0])) + self.x[0]
+		y = (y / self.maxy * (self.y[1] - self.y[0])) + self.y[0]
+
+		x = int(x * self._XK + self._XB * (self.x[1] - self.x[0]))
+		y = int(y * self._YK + self._YB * (self.y[1] - self.y[0]))
 		# print((x,y))
 		win32api.SetCursorPos((x,y))
 
 	def next_mouse_target(self, ac1, ac2):
+
+	#	print([ac1.x,ac1.y,ac2.x,ac2.y])
+
 		while (True):
 			now = time.time() * 1000 - self.start_time
+			# Debug
+			if (self.maxtime != -1 and now > self.maxtime * 1000):
+				break
+
 			if (now <= ac1.time + self._PRE_LEFT_MILLSEC):
 				continue
 			if (now >= ac2.time - self._PRE_LEFT_MILLSEC):

@@ -12,6 +12,7 @@ class ClickPlayer:
 		self.actionList = actionList
 		self.start_time = 0
 		self._CLICK_TIME = 20
+		self.maxtime = 10
 
 	def restart(self):
 		self.start_time = time.time() * 1000
@@ -21,18 +22,22 @@ class ClickPlayer:
 		self.start_time = start_time
 		self.play()
 
-	def play():
+	def play(self):
 		i = 0
 
 		while (i < len(self.actionList)):
-			now = time.time() * 1000
+			now = time.time() * 1000 - self.start_time
+			if (self.maxtime != -1 and now > self.maxtime * 1000):
+				break
 			if (self.actionList[i].typ == 0):
 				i += 1
-			elif (now < self.actionList[i].time - self._CLICK_TIME and (self.actionList[i].time & 1) == 1):
-				win32api.mouse_event(win32con.MOUSEEVENT_LEFTDOWN, 0, 0, 0, 0)
+			elif (now < self.actionList[i].time - self._CLICK_TIME and (self.actionList[i].time & 1) != 0):
+				win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+				print("Down")
 				i += 1
-			elif (now > self.actionList[i].time + self._CLICK_TIME and (self.actionList[i].time & 2) == 1):
-				win32api.mouse_event(win32con.MOUSEEVENT_LEFTUP, 0, 0, 0, 0)
+			elif (now > self.actionList[i].time + self._CLICK_TIME and (self.actionList[i].time & 2) != 0):
+				win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+				print("Up")
 				i += 1
 
 class ClickPlayerThread(Thread):
