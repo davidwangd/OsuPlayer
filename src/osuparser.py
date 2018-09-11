@@ -26,6 +26,9 @@ class TimePoint:
 
 class OsuFileParser:
 	INTERPOLATION_INTERVAL = 50
+	SPINNER_START_DELAY = 10
+	SPINNER_RADIUS = 50
+	SPINNER_ROTATER = np.e ** (1j/3 * np.pi)
 	BEZIER_STEPS = 10
 	EPSILON = 1e-4
 
@@ -120,7 +123,6 @@ class OsuFileParser:
 								intpl = next_interpolation
 								next_interpolation = []
 							seg.append(intpl[0])
-						# END for
 						curve_points.append(seg)
 						curve_len = 0
 						for i in range(OsuFileParser.BEZIER_STEPS):
@@ -238,6 +240,7 @@ class OsuFileParser:
 					else:
 						last_positive = beatlen
 					self.timing_points.append(OsuFileParser.TimingPoint(time, beatlen))
+				# END for
 			elif tag == 'Colours':
 				pass
 			elif tag == 'HitObjects':
@@ -267,9 +270,25 @@ class OsuFileParser:
 						duration = pixlen / (100 * self.slider_multiplier) * beatlen
 						self.res += self.__interpolate_slider(x, y, slider, repeats, time, duration)
 					elif typ & OsuFileParser.TYPE_SPINNER > 0:
-						pass
+						endTime = int(prop[5])
+						time += OsuFileParser.SPINNER_START_DELAY
+						i = 0
+						point_vec = OsuFileParser.SPINNER_RADIUS + 0j
+						while time < endTime:
+							tp = TimePoint(time, x + point_vec.real, y + point_vec.imag, TimePoint.MOUSE_NO_ACTION)
+							if i == 0:
+								tp.typ += TimePoint.MOUSE_DOWN
+							if time + OsuFileParser.INTERPOLATION_INTERVAL >= endTime:
+								tp.typ += TimePoint.MOUSE_UP
+							i += 1
+							self.res.append(tp)
+							time += OsuFileParser.INTERPOLATION_INTERVAL
+							point_vec *= OsuFileParser.SPINNER_ROTATER
+						# END while
 					else:
 						print('Unrecognized HitObject type %d)' % typ)
+					# END if
+				# END for
 			else:
 				print('Unrecognized tag ' + tag)
 				return
