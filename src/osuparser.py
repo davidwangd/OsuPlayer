@@ -96,11 +96,13 @@ class OsuFileParser:
 				center = (p1 - p0) * (w - abs(w)**2) / (2j * w.imag) + p0;
 				radius = p0 - center
 				center_angle = 2 * np.arcsin(abs(p2 - p0) / (2 * abs(radius)))
-				direction = np.sign((p1 - p0).real * (p2 - p1).imag - (p1 - p0).imag * (p2 - p0).real)
+				if (time==650): print(p1-p0, p2-p1)
+				direction = np.sign((p1 - p0).real * (p2 - p1).imag - (p1 - p0).imag * (p2 - p1).real)
 				# Do interpolation
 				interpolation = [p0]
 				for i in range(1, points + 1):
 					angle = direction * (center_angle * i / points)
+					if (time==650): print (angle, radius, center)
 					interpolation.append(radius * (np.cos(angle) + np.sin(angle) * 1j) + center);
 			else:
 				controls_len = len(controls)
@@ -239,7 +241,10 @@ class OsuFileParser:
 						beatlen = -beatlen / 100 * last_positive
 					else:
 						last_positive = beatlen
-					self.timing_points.append(OsuFileParser.TimingPoint(time, beatlen))
+					if len(self.timing_points) > 0 and self.timing_points[-1].time == time:
+						self.timing_points[-1] = OsuFileParser.TimingPoint(time, beatlen)
+					else:
+						self.timing_points.append(OsuFileParser.TimingPoint(time, beatlen))
 				# END for
 			elif tag == 'Colours':
 				pass
