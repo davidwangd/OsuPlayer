@@ -5,6 +5,18 @@ import win32gui
 import codecs
 import sys
 import time
+import PyHook3
+import pythoncom
+import os
+
+def onKeyboardEvent(event):
+	print("KeyID:", event.KeyID)
+
+	if (event.KeyID == 32):
+		os._exit(0)
+	# 同鼠标事件监听函数的返回值
+	return True
+
 if __name__ == "__main__":
 	if (len(sys.argv) == 1):
 		parser = OsuFileParser()
@@ -44,8 +56,6 @@ if __name__ == "__main__":
 		pp.begin2()
 		if (sl > 0):
 			time.sleep(sl)
-		position_thread.start()
-		click_thread.start()
 
 	elif (len(sys.argv) == 2):
 		file = codecs.open(sys.argv[1])
@@ -78,6 +88,12 @@ if __name__ == "__main__":
 			pp.padding = -1000 * sl
 			cp.padding = -1000 * sl
 
-		print("\n\n*****************Begin*****************\n\n")
-		position_thread.start()
-		click_thread.start()
+	hm = PyHook3.HookManager()
+	hm.KeyDown = onKeyboardEvent
+	hm.HookKeyboard()
+
+	print("\n\n*****************Begin*****************\n\n")
+	position_thread.start()
+	click_thread.start()
+
+	pythoncom.PumpMessages()
