@@ -13,6 +13,7 @@ class ClickPlayer:
 		self.start_time = 0
 		self._CLICK_TIME = 50
 		self.maxtime = -1
+		self.padding = 0
 
 	def restart(self):
 		self.start_time = time.time() * 1000
@@ -26,7 +27,7 @@ class ClickPlayer:
 		i = 0
 		flag = 0
 		while (i < len(self.actionList)):
-			now = time.time() * 1000 - self.start_time
+			now = time.time() * 1000 - self.start_time + self.padding
 			if (self.maxtime != -1 and now > self.maxtime * 1000):
 				break
 			if (self.actionList[i].typ == 0):

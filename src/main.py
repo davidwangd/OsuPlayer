@@ -74,6 +74,9 @@ if __name__ == "__main__":
 		pp.begin2()
 		if (sl > 0):
 			time.sleep(sl)
+		else:
+			pp.padding = -1000 * sl
+			cp.padding = -1000 * sl
 
 		print("\n\n*****************Begin*****************\n\n")
 		position_thread.start()

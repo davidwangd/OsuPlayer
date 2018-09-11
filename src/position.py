@@ -37,7 +37,7 @@ class PositionPlayer:
 		self._YK = 0.8
 		self._YB = 0.135
 		self.dim_threshold = 12
-
+		self.padding = 0
 		self.catch_ui()
 
 		self.maxtime = -1
@@ -145,7 +145,7 @@ class PositionPlayer:
 			t2 -= 30
 
 		while (True):
-			now = time.time() * 1000 - self.start_time
+			now = time.time() * 1000 - self.start_time + self.padding
 			# Debug
 			if (self.maxtime != -1 and now > self.maxtime * 1000):
 				break
