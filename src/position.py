@@ -4,10 +4,19 @@ import win32con
 import win32api
 import math
 from threading import Thread
-
+from PIL import ImageGrab
+from PIL import Image
 
 # right => x
 # down  => y
+
+def calc(typ):
+	if typ == 1:
+		return -20
+	elif typ == 2:
+		return 20
+	else:
+		return 0
 
 class PositionPlayer:
 	def __init__(self, actionList, class_name):
@@ -24,14 +33,16 @@ class PositionPlayer:
 		self._BEFORE_RESTART = 1.95
 
 		self._XK = 0.6
-		self._XB = 0.25
+		self._XB = 0.26
 		self._YK = 0.8
-		self._YB = 0.13
+		self._YB = 0.135
+		self.dim_threshold = 12
 
 		self.catch_ui()
 
-		self.maxtime = 30
+		self.maxtime = -1
 
+	# This Function is dropped!
 	def begin(self):
 		self.move_to(1.2 * self.maxx,self.maxy)
 		# thank to the strange behaviou of osu! we have to make it like this
@@ -62,6 +73,37 @@ class PositionPlayer:
 #		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 
 		time.sleep(self._BEFORE_RESTART)
+
+	def begin2(self):
+		self.move_to(1.2 * self.maxx,self.maxy)
+		# thank to the strange behaviou of osu! we have to make it like this
+		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+		time.sleep(0.3)
+		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+
+		x0 = int(0.88 * self.x[1] + 0.12 * self.x[0])
+		x1 = int(0.98 * self.x[1] + 0.02 * self.x[0])
+		y0 = int(0.48 * self.y[1] + 0.52 * self.y[0])
+		y1 = int(0.52 * self.y[1] + 0.48 * self.y[0])
+
+		im = Image.new("RGB",(100,100))
+		w = x1 - x0
+		h = y1 - y0
+
+		while (True):
+			im = ImageGrab.grab((x0,y0,x1,y1))
+			pix = im.load()
+			cnt = 0
+			for i in range(w):
+				for j in range(h):
+					r, g, b = pix[i, j]
+					cnt += r + g + b
+			cnt /= h * w * 3
+			if (cnt < self.dim_threshold):
+				break
+			# print(cnt)
+
+		im.save("last.jpg")
 
 	# To restart the player
 	def restart(self):
@@ -94,6 +136,11 @@ class PositionPlayer:
 	def next_mouse_target(self, ac1, ac2):
 
 	#	print([ac1.x,ac1.y,ac2.x,ac2.y])
+		t1 = ac1.time
+		t2 = ac2.time 
+		# to prevent the last error
+		if (ac1.typ == 2):
+			t1 += 30
 
 		while (True):
 			now = time.time() * 1000 - self.start_time
@@ -101,12 +148,12 @@ class PositionPlayer:
 			if (self.maxtime != -1 and now > self.maxtime * 1000):
 				break
 
-			if (now <= ac1.time + self._PRE_LEFT_MILLSEC):
+			if (now <= t1 + self._PRE_LEFT_MILLSEC):
 				continue
-			if (now >= ac2.time - self._PRE_LEFT_MILLSEC):
+			if (now >= t2 - self._PRE_LEFT_MILLSEC):
 				break 
 
-			pos = (now - ac1.time) / (ac2.time - ac1.time)
+			pos = (now - t1) / (t2 - t1)
 			x = ac1.x * (1 - pos) + ac2.x * pos
 			y = ac1.y * (1 - pos) + ac2.y * pos
 			# print([pos,x,y])

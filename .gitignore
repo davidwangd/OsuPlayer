@@ -5,3 +5,5 @@ test/*
 
 __init__.py
 *.osu
+
+*.jpg
