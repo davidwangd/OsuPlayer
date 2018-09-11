@@ -141,6 +141,8 @@ class PositionPlayer:
 		# to prevent the last error
 		if (ac1.typ == 2):
 			t1 += 30
+		if (ac2.typ == 1 or ac2.typ == 3):
+			t2 -= 30
 
 		while (True):
 			now = time.time() * 1000 - self.start_time

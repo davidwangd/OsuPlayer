@@ -11,7 +11,7 @@ class ClickPlayer:
 	def __init__(self, actionList):
 		self.actionList = actionList
 		self.start_time = 0
-		self._CLICK_TIME = 25
+		self._CLICK_TIME = 50
 		self.maxtime = -1
 
 	def restart(self):
