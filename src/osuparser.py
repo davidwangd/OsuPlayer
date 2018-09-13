@@ -28,7 +28,7 @@ class OsuFileParser:
 	INTERPOLATION_INTERVAL = 50
 	SPINNER_START_DELAY = 10
 	SPINNER_RADIUS = 50
-	SPINNER_ROTATER = np.e ** (1j/3 * np.pi)
+	SPINNER_ROTATER = np.e ** (1j/4 * np.pi)
 	BEZIER_STEPS = 10
 	EPSILON = 1e-4
 
@@ -95,14 +95,12 @@ class OsuFileParser:
 				w = (p2 - p0) / (p1 - p0)
 				center = (p1 - p0) * (w - abs(w)**2) / (2j * w.imag) + p0;
 				radius = p0 - center
-				center_angle = 2 * np.arcsin(abs(p2 - p0) / (2 * abs(radius)))
-				if (time==650): print(p1-p0, p2-p1)
+				center_angle = 2 * (np.arcsin(abs(p1 - p0) / (2 * abs(radius))) + np.arcsin(abs(p2 - p1) / (2 * abs(radius))))
 				direction = np.sign((p1 - p0).real * (p2 - p1).imag - (p1 - p0).imag * (p2 - p1).real)
 				# Do interpolation
 				interpolation = [p0]
 				for i in range(1, points + 1):
 					angle = direction * (center_angle * i / points)
-					if (time==650): print (angle, radius, center)
 					interpolation.append(radius * (np.cos(angle) + np.sin(angle) * 1j) + center);
 			else:
 				controls_len = len(controls)
@@ -287,7 +285,7 @@ class OsuFileParser:
 								tp.typ += TimePoint.MOUSE_UP
 							i += 1
 							self.res.append(tp)
-							time += OsuFileParser.INTERPOLATION_INTERVAL
+							time += OsuFileParser.INTERPOLATION_INTERVAL / 2
 							point_vec *= OsuFileParser.SPINNER_ROTATER
 						# END while
 					else:
