@@ -8,16 +8,36 @@ import time
 import PyHook3
 import pythoncom
 import os
+from config import Config
+
+config = Config()
 
 def onKeyboardEvent(event):
+	global pp,cp,config
+
 	print("KeyID:", event.KeyID)
 
 	if (event.KeyID == 32):
+		config.dump()
 		os._exit(0)
+	elif (event.KeyID == 39):
+		config.dict["_XB"] += 0.005
+		pp.config(config)
+	elif (event.KeyID == 37):
+		config.dict["_XB"] -= 0.005
+		pp.config(config)
+	elif (event.KeyID == 38):
+		config.dict["_YB"] -= 0.005
+		pp.config(config)
+	elif (event.KeyID == 40):
+		config.dict["_YB"] += 0.005
+		pp.config(config)
 	# 同鼠标事件监听函数的返回值
 	return True
 
 if __name__ == "__main__":
+	global pp,cp
+
 	if (len(sys.argv) == 1):
 		parser = OsuFileParser()
 		print("Please Input the Osu! file!")
@@ -87,6 +107,9 @@ if __name__ == "__main__":
 		else:
 			pp.padding = -1000 * sl
 			cp.padding = -1000 * sl
+
+	pp.config(config)
+	cp.config(config)
 
 	hm = PyHook3.HookManager()
 	hm.KeyDown = onKeyboardEvent

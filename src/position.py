@@ -42,6 +42,14 @@ class PositionPlayer:
 
 		self.maxtime = -1
 
+	
+	def config(self, config):
+		lis = ["maxx","maxy","_XK","_XB","_YK","_YB","_BEFORE_RESTART","_PRE_LEFT_MILLSEC"]
+		for item in lis:
+			v, f = config.get(item)
+			if (f):
+				setattr(self, item, v)
+
 	# This Function is dropped!
 	def begin(self):
 		self.move_to(1.2 * self.maxx,self.maxy)

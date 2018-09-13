@@ -23,6 +23,13 @@ class ClickPlayer:
 		self.start_time = start_time
 		self.play()
 
+	def config(self, config):
+		lis = ["_CLICK_TIME"]
+		for item in lis:
+			v, f = config.get(item)
+			if (f):
+				setattr(self, item, v)
+
 	def play(self):
 		i = 0
 		flag = 0
@@ -49,6 +56,7 @@ class ClickPlayer:
 				time.sleep(0.05)
 				win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 				i += 1
+
 class ClickPlayerThread(Thread):
 	def __init__(self, player):
 		super(ClickPlayerThread, self).__init__(name = "ClickPlayerThread")
